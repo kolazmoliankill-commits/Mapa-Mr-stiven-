@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Tracker Pro | Jaider</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600&display=swap');
+        
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Inter', sans-serif; color: white; }
+        
+        /* Interfaz estilo Streamer */
+        #ui {
+            position: absolute; top: 20px; left: 20px; z-index: 100;
+            pointer-events: none;
+        }
+        h1 {
+            font-family: 'Orbitron', sans-serif; margin: 0; font-size: 1.8rem;
+            color: #ff4500; text-shadow: 0 0 15px rgba(255, 69, 0, 0.6);
+        }
+        .counter {
+            background: rgba(15, 15, 15, 0.8); padding: 10px 20px;
+            border-radius: 8px; border-left: 4px solid #ff4500;
+            margin-top: 10px; display: inline-block;
+        }
+        .value { font-family: 'Orbitron', sans-serif; font-size: 2rem; color: #fff; }
+        
+        .footer-msg {
+            position: absolute; bottom: 20px; width: 100%; text-align: center;
+            color: #555; font-size: 0.8rem; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui">
+        <h1>WORLD TRACKER</h1>
+        <div class="counter">
+            <span class="value" id="count">0</span> <small>STREAMS MARCADOS</small>
+        </div>
+    </div>
+
+    <div class="footer-msg">Click en los puntos para ver el Stream</div>
+    <div id="globeViz"></div>
+
+    <script src="//unpkg.com/three"></script>
+    <script src="//unpkg.com/three-globe"></script>
+
+    <script>
+        // --- AQUÍ PONES TUS VIDEOS Y COORDENADAS ---
+        const myStreams = [
+            { 
+                lat: 2.3889, lng: -75.8917, 
+                color: '#ff4500', 
+                url: 'https://www.youtube.com/@MrStivenTc' // Link de ejemplo
+            },
+            { 
+                lat: 4.6097, lng: -74.0817, 
+                color: '#ffffff', 
+                url: 'https://www.youtube.com/@WestCOL' // Link de ejemplo
+            }
+        ];
+
+        document.getElementById('count').innerText = myStreams.length;
+
+        // Crear el Globo
+        const Globe = new ThreeGlobe()
+            .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+            .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+            .pointsData(myStreams)
+            .pointAltitude(0.07)
+            .pointRadius(0.5)
+            .pointColor('color')
+            .onPointClick(point => window.open(point.url, '_blank'));
+
+        // Configuración de la Escena
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('globeViz').appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        scene.add(Globe);
+        scene.add(new THREE.AmbientLight(0xbbbbbb, 0.5));
+        scene.add(new THREE.DirectionalLight(0xffffff, 0.8));
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 400;
+
+        // Animación de rotación suave
+        (function animate() {
+            Globe.rotation.y += 0.002;
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        })();
+
+        // Ajuste al girar el cel
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
